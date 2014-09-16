@@ -185,9 +185,9 @@ module Gitlab
           raw_diff.map do |diff|
             idx += 1
             rug_diff = Gitlab::Git::Diff.new(diff)
-            rug_diff.diff = diffrug[idx][:@diff]
-            rug_diff.a_mode = diffrug[idx][:@a_mode]
-            rug_diff.b_mode = diffrug[idx][:@b_mode]
+            rug_diff.diff = @diff_lines[idx][:@diff]
+            rug_diff.a_mode = @diff_lines[idx][:@a_mode]
+            rug_diff.b_mode = @diff_lines[idx][:@b_mode]
             rug_diff.new_file = false
             rug_diff
           end
@@ -201,10 +201,13 @@ module Gitlab
         diffs = patch.split("diff --git ")
         diffs.shift
 
-        diff_lines = Array.new
+        @diff_lines = Array.new
 
         diffs.each do |diff|
           @diff = String.new
+          ab_path = String.new
+          ab_mode = String.new
+
           cnt = diff.index(/\n/)
           line_1 = diff.slice!(0,cnt+1)
           cnt = diff.index(/\n/)
@@ -213,7 +216,7 @@ module Gitlab
           ab_mode = line_2.split(nil)
 #          diff_hash = Hash[:@a_path, ab_path[0], :@b_path, ab_path[1], :@a_mode, ab_mode[0], :@b_mode, ab_mode[1], :@diff, diff]
           diff_hash = Hash[:@a_path, ab_path[0], :@b_path, ab_path[1], :@a_mode, nil, :@b_mode, ab_mode[1], :@diff, diff]
-          diff_lines << diff_hash
+          @diff_lines << diff_hash
         end
       end
 
