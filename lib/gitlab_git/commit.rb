@@ -178,7 +178,12 @@ module Gitlab
 
       def diffs
         if raw_commit.is_a?(Rugged::Commit)
-          raw_diff = raw_commit.parents[0].diff(raw_commit)
+          if raw_commit.parents.length == 0
+            opt = {:reverse => true}
+            raw_diff = raw_commit.tree.diff(nil,opt)
+          else
+            raw_diff = raw_commit.parents[0].diff(raw_commit)
+          end
           to_diff_rugged(raw_diff)
 
           idx = -1
@@ -188,7 +193,11 @@ module Gitlab
             rug_diff.diff = @diff_lines[idx][:@diff]
             rug_diff.a_mode = @diff_lines[idx][:@a_mode]
             rug_diff.b_mode = @diff_lines[idx][:@b_mode]
-            rug_diff.new_file = false
+            if not @diff_lines[idx][:@new_file]
+              rug_diff.new_file = false
+            end
+            rug_diff.renamed_file = @diff_lines[idx][:@renamed_file]
+            rug_diff.deleted_file = @diff_lines[idx][:@deleted_file]
             rug_diff
           end
         else
@@ -207,6 +216,9 @@ module Gitlab
           @diff = String.new
           ab_path = String.new
           ab_mode = String.new
+          new_file = false
+          renamed_file = false
+          deleted_file = false
 
           cnt = diff.index(/\n/)
           line_1 = diff.slice!(0,cnt+1)
@@ -214,8 +226,26 @@ module Gitlab
           line_2 = diff.slice!(0,cnt+1)
           ab_parh = line_1.split(nil)
           ab_mode = line_2.split(nil)
-#          diff_hash = Hash[:@a_path, ab_path[0], :@b_path, ab_path[1], :@a_mode, ab_mode[0], :@b_mode, ab_mode[1], :@diff, diff]
-          diff_hash = Hash[:@a_path, ab_path[0], :@b_path, ab_path[1], :@a_mode, nil, :@b_mode, ab_mode[1], :@diff, diff]
+          b_mode = ab_mode[2]
+          if ab_mode[0] == "index"
+          else
+            if ab_mode[0] == "new"
+              new_file = true
+            elsif ab_mode[0] == "renamed"
+              renamed_file = true
+            elsif ab_mode[0] == "deleted"
+              deleted_file = true
+            end
+            b_mode = ab_mode[3]
+            cnt = diff.index(/\n/)
+            line_3 = diff.slice!(0,cnt+1)
+          end
+          cnt = diff.index(/\n/)
+          line = diff.slice!(0,cnt+1)
+          cnt = diff.index(/\n/)
+          line = diff.slice!(0,cnt+1)
+
+          diff_hash = Hash[:@a_path, ab_path[0], :@b_path, ab_path[1], :@a_mode, nil, :@b_mode, b_mode, :@diff, diff, :@new_file, new_file, :@renamed_file, renamed_file, :@deleted_file, deleted_file]
           @diff_lines << diff_hash
         end
       end
