@@ -263,7 +263,11 @@ module Gitlab
       end
 
       def stats
-        raw_commit.stats
+        if raw_commit.is_a?(Rugged::Commit)
+          Gitlab::Git::CommitStats.new(raw_commit)
+        else
+          raw_commit.stats
+        end
       end
 
       def to_patch
