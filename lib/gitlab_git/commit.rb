@@ -190,7 +190,7 @@ module Gitlab
           raw_diff.map do |diff|
             idx += 1
             rug_diff = Gitlab::Git::Diff.new(diff)
-            rug_diff.diff = @diff_lines[idx][:@diff]
+            rug_diff.diff = @diff_lines[idx][:@diff].to_s.force_encoding("utf-8")
             rug_diff.a_mode = @diff_lines[idx][:@a_mode]
             rug_diff.b_mode = @diff_lines[idx][:@b_mode]
             if not @diff_lines[idx][:@new_file]
