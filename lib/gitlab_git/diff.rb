@@ -34,6 +34,9 @@ module Gitlab
 
         if raw_diff.is_a?(Hash)
           init_from_hash(raw_diff)
+        elsif raw_diff.is_a?(Rugged::Diff::Patch)
+          # if rugged lib version over 19 ->  change to class - Rugged::Patch
+          init_from_rugged(raw_diff)
         else
           init_from_grit(raw_diff)
         end
@@ -63,6 +66,19 @@ module Gitlab
         serialize_keys.each do |key|
           send(:"#{key}=", grit.send(key))
         end
+      end
+
+      def init_from_rugged(rugged)
+        @raw_diff = rugged
+        @diff = rugged
+        @new_path = rugged.delta.new_file[:path]
+        @old_path = rugged.delta.old_file[:path]
+        @a_mode = rugged.delta.new_file[:mode]
+        @b_mode = rugged.delta.old_file[:mode]
+        @new_file = rugged.delta.new_file
+        @old_file = rugged.delta.old_file
+        @renamed_file = rugged.delta.renamed?
+        @deleted_file = rugged.delta.deleted?
       end
 
       def init_from_hash(hash)
