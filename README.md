@@ -1,3 +1,13 @@
+## about branch grit2rugged19
+
+[update gitlab for grit2rugged19 branch]  
+Change Gemfiile and Gemfile.lock following this URL gist file.  
+
+https://gist.github.com/kotarosasaki/806c6b8f630176b37e6d
+
+after change these file, you put `sudo -u git -H bundle install --no-deployment --path vendor/bundle`  
+(before input this command, you must stop gitlab first.)
+
 ## GitLab Git
 
 GitLab wrapper around git objects. 
