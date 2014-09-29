@@ -51,8 +51,7 @@ module Gitlab
             begin
               commit = repo.lookup(oid)
             rescue Rugged::InvalidError
-              oid = repo.rugged_head.target
-              commit = repo.lookup(oid)
+              commit = repo.rugged.rev_parse(commit_id)
             end
           else
             commit = repo.log(ref: commit_id, limit: 1).first
